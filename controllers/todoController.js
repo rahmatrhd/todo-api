@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const Todo = require('../models/Todo')
 const jwt = require('jsonwebtoken')
+const cron = require('node-cron')
 
 //helpers
 const tagsToArray = require('../helpers/tagsToArray')
@@ -21,10 +22,30 @@ module.exports = {
     Todo.create({
       body: req.body.body,
       check: false,
+      due: req.body.due,
       tags: tagsToArray(req.body.tags),
       userId: user._id
     })
-    .then(result => res.send(result))
+    .then(result => {
+      if (result.due != null) {
+        let due = new Date(result.due)
+        console.log(new Date(), due)
+        cron.schedule(`${due.getSeconds()} ${due.getMinutes()} ${due.getHours()} ${due.getDate()} ${due.getMonth() + 1} *`, function(){
+          console.log('checked')
+          Todo.update({
+            _id: result._id
+          }, {
+            check: true
+          })
+          .then(() => {
+            global.io.emit('checked', result._id)
+          })
+          .catch(err => res.send(err))
+        })
+      }
+
+      res.send(result)
+    })
     .catch(err => res.send(err))
   },
 
@@ -46,7 +67,7 @@ module.exports = {
   },
 
   delete: (req, res) => {
-    Todo.delete({_id: req.params.id})
+    Todo.deleteOne({_id: req.params.id})
     .then(result => res.send(result))
     .catch(err => res.send(err))
   }

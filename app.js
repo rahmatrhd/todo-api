@@ -5,6 +5,9 @@ const mongoose = require('mongoose')
 mongoose.connect('mongodb://localhost/todo')
 
 const app = express()
+const server = require('http').Server(app)
+const io = require('socket.io')(server)
+global.io = io
 
 app.use(cors())
 app.use(bodyParser.json())
@@ -19,6 +22,6 @@ app.use('/', index)
 app.use('/todo', todo)
 app.use('/users', users)
 
-app.listen(3000, () => {
+server.listen(3000, () => {
   console.log('listening...')
 })

@@ -3,6 +3,10 @@ const Schema = mongoose.Schema
 
 const todoSchema = new Schema({
   body: String,
+  due: {
+    type: Date,
+    default: null
+  },
   check: Boolean,
   tags: [String],
   userId: Schema.Types.ObjectId

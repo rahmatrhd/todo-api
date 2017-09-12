@@ -9,6 +9,12 @@ module.exports = {
     next()
   },
 
+  getUser: (req, res) => {
+    FB.api('/me', response => {
+      console.log(response)
+    })
+  },
+
   login: (req, res) => {
     User.findOne({facebookId: req.headers.fbid})
     .then(user => {
